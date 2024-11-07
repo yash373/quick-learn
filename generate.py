@@ -7,54 +7,29 @@ load_dotenv('.env.local')
 # Setting up client
 client = Groq()
 
-chat_completion = client.chat.completions.create(
-    #
-    # Required parameters
-    #
-    messages=[
-        # Set an optional system message. This sets the behavior of the
-        # assistant and can be used to provide specific instructions for
-        # how it should behave throughout the conversation.
-        {
-            "role": "system",
-            "content": "you are a helpful assistant."
-        },
-        # Set a user message for the assistant to respond to.
-        {
-            "role": "user",
-            "content": "Explain the importance of fast language models",
-        }
-    ],
+# Generate Function
+def generate(syllabus: str, exam: str, time: str, context: str):
+    system_prompt = "You are a trainer who has trained several toppers. You are very helpful and very useful when it comes to giving advice. You are often given a specific time and some syllabus and some other important information which can be case sensitive. You must return with an action plan to finish the task at hand and help your students ace the exam using your previous knowledge of the weightage of chapter for whatsoever exam you are asked for. The action plan you return with must be capable of returning maximum marks for the given time allotted."
 
-    # The language model which will generate the completion.
-    model="llama3-8b-8192",
+    user_content = f"Create an action plan for the {exam} exam. The syllabus includes: {syllabus}. You have {time} to prepare. Additional context: {context}."
 
-    #
-    # Optional parameters
-    #
+    chat_completion = client.chat.completions.create(
+        messages=[
+            {
+                "role": "system",
+                "content": system_prompt
+            },
+            {
+                "role": "user",
+                "content": user_content,
+            }
+        ],
+        model="llama3-8b-8192",
+        temperature=0.5,
+        max_tokens=1024,
+        top_p=1,
+        stop=None,
+        stream=False,
+    )
 
-    # Controls randomness: lowering results in less random completions.
-    # As the temperature approaches zero, the model will become deterministic
-    # and repetitive.
-    temperature=0.5,
-
-    # The maximum number of tokens to generate. Requests can use up to
-    # 32,768 tokens shared between prompt and completion.
-    max_tokens=1024,
-
-    # Controls diversity via nucleus sampling: 0.5 means half of all
-    # likelihood-weighted options are considered.
-    top_p=1,
-
-    # A stop sequence is a predefined or user-specified text string that
-    # signals an AI to stop generating content, ensuring its responses
-    # remain focused and concise. Examples include punctuation marks and
-    # markers like "[end]".
-    stop=None,
-
-    # If set, partial message deltas will be sent.
-    stream=False,
-)
-
-# Print the completion returned by the LLM.
-print(chat_completion.choices[0].message.content)
+    print(chat_completion.choices[0].message.content)
